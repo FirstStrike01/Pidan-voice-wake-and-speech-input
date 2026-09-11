@@ -2,7 +2,7 @@
 __pycache__/
 *.pyc
 
-# 敏感信息 —— API Key 绝不能进仓库，更不能传到网上！
+# 敏感信息 —— API Key 不进仓库，不传网上！
 dashscope_api_key.txt
 
 # 运行时生成的日志
