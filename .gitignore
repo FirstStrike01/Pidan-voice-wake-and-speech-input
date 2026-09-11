@@ -1,0 +1,16 @@
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 敏感信息 —— API Key 绝不能进仓库，更不能传到网上！
+dashscope_api_key.txt
+
+# 运行时生成的日志
+transcript.txt
+
+# 语音模型（42MB，是"下载来的数据"，不算代码）
+vosk-model-small-cn-0.22/
+
+# 之前折腾留下的临时目录
+_tmp/
+_dashscope_pkg/
