@@ -167,25 +167,17 @@ def main():
     state = "idle"             # idle / listening / transcribing
     last_activity = 0.0        # 最近一次收到语音内容的时刻
     recognition = None
-    last_len = 0
 
     preroll = collections.deque(maxlen=int(PREROLL_SECONDS * SAMPLE_RATE / BLOCK_SIZE))
 
-    def show_partial(text):
-        nonlocal last_len
-        line = f"{dim('识别中')}… {text}"
-        # 先写「本行 + 80 格」把上一行残留清掉，再回车重写本行，避免留下尾巴
-        sys.stdout.write("\r" + line + " " * 80 + "\r" + line)
+    def show_partial():
+        line = f"{dim('识别中')}…"
+        sys.stdout.write("\r" + line)
         sys.stdout.flush()
-        last_len = len(line)
 
     def clear_partial():
-        nonlocal last_len
-        if last_len:
-            # 中文是双宽字符，len() 算不准视觉宽度，固定清一整行最稳
-            sys.stdout.write("\r" + " " * 80 + "\r")
-            sys.stdout.flush()
-            last_len = 0
+        sys.stdout.write("\r" + " " * 80 + "\r")
+        sys.stdout.flush()
 
     def start_cloud():
         nonlocal recognition
@@ -193,6 +185,7 @@ def main():
                                   sample_rate=SAMPLE_RATE,
                                   callback=ASRCallback(result_q))
         recognition.start()
+        show_partial()
         for chunk in list(preroll):          # 回放预录，防止丢指令开头
             recognition.send_audio_frame(chunk)
 
@@ -239,7 +232,7 @@ def main():
                     if kind == "partial":
                         if state != "idle" and is_content(payload):
                             last_activity = now
-                            show_partial(payload)
+                            #show_partial()
                     elif kind == "final":
                         if state != "idle" and is_content(payload):
                             last_activity = now
