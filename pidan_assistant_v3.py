@@ -70,7 +70,6 @@ PUNCT = "，。！？、,.!?;；:：…"
 
 LISTEN_TIMEOUT = 2.0         # 唤醒后至少聆听 2 秒等第一句
 SILENCE_GAP = 1.0           # 说话间隔最多允许 1 秒
-PREROLL_SECONDS = 0.5        # 唤醒后回放最近 0.5 秒的音频，防丢开头
 # ----------------------------
 
 audio_q = queue.Queue()
@@ -168,7 +167,6 @@ def main():
     last_activity = 0.0        # 最近一次收到语音内容的时刻
     recognition = None
 
-    preroll = collections.deque(maxlen=int(PREROLL_SECONDS * SAMPLE_RATE / BLOCK_SIZE))
 
     def show_partial():
         line = f"{dim('识别中')}…"
@@ -186,8 +184,6 @@ def main():
                                   callback=ASRCallback(result_q))
         recognition.start()
         show_partial()
-        for chunk in list(preroll):          # 回放预录，防止丢指令开头
-            recognition.send_audio_frame(chunk)
 
     def stop_cloud():
         nonlocal recognition
@@ -271,7 +267,6 @@ def main():
                         state = "idle"
 
                 # 5) 预录缓冲 + 喂云端
-                preroll.append(data)
                 if recognition is not None:
                     try:
                         recognition.send_audio_frame(data)
