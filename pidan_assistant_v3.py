@@ -7,15 +7,14 @@
     python pidan_assistant_v3.py
 
 唤醒后的流程：
-  1. 保持至少 5 秒聆听，等你开口说第一句；
+  1. 保持至少 2 秒聆听，等你开口说第一句；
   2. 听到第一句后，进入「转化」状态，开始攒指令；
-  3. 说话停顿（间隔）只要不超过 2 秒，就继续攒；
-  4. 连续 2 秒没再说话 → 结束本次对话，把攒下的指令一次性输出。
+  3. 说话停顿（间隔）只要不超过 1 秒，就继续攒；
+  4. 连续 1 秒没再说话 → 结束本次对话，把攒下的指令一次性输出。
 
 依赖：vosk + sounddevice + dashscope
 """
 
-import collections
 import json
 import os
 import queue
@@ -168,7 +167,7 @@ def main():
     recognition = None
 
 
-    def show_partial():
+    def show_listening():
         line = f"{dim('识别中')}…"
         sys.stdout.write("\r" + line)
         sys.stdout.flush()
@@ -183,7 +182,7 @@ def main():
                                   sample_rate=SAMPLE_RATE,
                                   callback=ASRCallback(result_q))
         recognition.start()
-        show_partial()
+        show_listening()
 
     def stop_cloud():
         nonlocal recognition
@@ -228,7 +227,6 @@ def main():
                     if kind == "partial":
                         if state != "idle" and is_content(payload):
                             last_activity = now
-                            #show_partial()
                     elif kind == "final":
                         if state != "idle" and is_content(payload):
                             last_activity = now
@@ -266,7 +264,7 @@ def main():
                         print(red("启动在线识别失败："), e, file=sys.stderr)
                         state = "idle"
 
-                # 5) 预录缓冲 + 喂云端
+                # 5) 喂云端
                 if recognition is not None:
                     try:
                         recognition.send_audio_frame(data)
